@@ -3,6 +3,8 @@ import logging
 from requests.exceptions import HTTPError
 from urllib3.exceptions import MaxRetryError
 import re
+import csv
+import datetime
 
 is_well_formed_link = re.compile(r'^https?://.+/.+$')
 is_root_path = re.compile(r'^/.+$')
@@ -33,7 +35,8 @@ def _news_scraper(news_site_uid):
             articles.append(article)
             print(article.title)
 
-    print(len(articles))
+    #print(len(articles))
+    _save_articles(news_site_uid, articles)
 
 def _fetch_article(news_site_uid, host, link):
     logger.info(f'Start fetching article at {link}')
@@ -58,6 +61,20 @@ def _build_link(host, link):
         return f'{host}{link}'
     else:
         return f'{host}/{link}'
+
+def _save_articles(news_site_uid, articles):
+    now = datetime.datetime.now().strftime('%Y_%m_%d')
+    out_file_name = f'{news_site_uid}_{now}_articles.csv'
+
+    csv_headers = list(filter(lambda property: not property.startswith('_'), dir(articles[0])))
+
+    with open(out_file_name, mode='w+', encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(csv_headers)
+
+        for article in articles:
+            row = [str(getattr(article, prop)) for prop in csv_headers]
+            writer.writerow(row)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
