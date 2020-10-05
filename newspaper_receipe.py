@@ -3,6 +3,8 @@ import pandas as pd
 import argparse
 import logging
 
+from pandas.core.dtypes import missing
+
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
@@ -14,6 +16,7 @@ def main(filename):
     newspaper_uid = _extract_newspaper_uid(filename)
     df = _add_newspaper_uid_column(df, newspaper_uid)
     df = _extract_host(df)
+    df = _file_missing_titles(df)
 
     return df
 
@@ -42,6 +45,19 @@ def _add_newspaper_uid_column(df, newspaper_uid):
 def _extract_host(df):
     logger.info('Extrayendo el Host de las urls')
     df['host'] = df['url'].apply(lambda url: urlparse(url).netloc)
+
+    return df
+
+
+def _file_missing_titles(df):
+    logger.info('Filling missing titles')
+    missing_titles_mask = df['title'].isna()
+    missing_titles = (df[missing_titles_mask]['url']
+                      .str.extract(r'(?P<missing_titles>[^/]+)$')
+                      .applymap(lambda title: title.split('_'))
+                      .applymap(lambda tittle_word_list: ' '.join(tittle_word_list))
+                      )
+    df.loc[missing_titles_mask, 'title'] = missing_titles.loc[:, 'missing_titles']
 
     return df
 
