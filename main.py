@@ -23,6 +23,7 @@ def _news_scraper(news_site_uid):
 
     homepage= news.HomePage(news_site_uid, host)
 
+    
     for link in homepage.article_links:
         print(link)
 

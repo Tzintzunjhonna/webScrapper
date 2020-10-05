@@ -5,6 +5,7 @@ news_sites:
       homepage_article_links: '.ce2-Tipo1_Titulo a'
       article_body: '.field-name-body'
       article_title: '.Encabezado-Articulo h1'
+    
   elpais:
     url: https://elpais.com
     queries:

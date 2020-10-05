@@ -1,7 +1,13 @@
 import bs4
 import requests
-from common import config
 
+from common import config
+"""
+import news_page_objects as news
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+"""
 
 class NewsPage:
 
@@ -9,8 +15,9 @@ class NewsPage:
         self._config = config()['news_sites'][news_site_uid]
         self._queries = self._config['queries']
         self._html = None
+        self._url = url
 
-        self._visit(url)
+        self._visit(self._url)
 
     def _select(self, query_string):
         return self._html.select(query_string)
@@ -22,14 +29,15 @@ class NewsPage:
 
         self._html = bs4.BeautifulSoup(response.text, 'html.parser')
 
+
 class HomePage(NewsPage):
+
     def __init__(self, news_site_uid, url):
-        super().__init__(news_site_uid,url)
+        super().__init__(news_site_uid, url)
 
     @property
     def article_links(self):
         link_list = []
-
         for link in self._select(self._queries['homepage_article_links']):
             if link and link.has_attr('href'):
                 link_list.append(link)
@@ -37,11 +45,10 @@ class HomePage(NewsPage):
         return set(link['href'] for link in link_list)
 
 
-
 class ArticlePage(NewsPage):
 
     def __init__(self, news_site_uid, url):
-        super().__init__(news_site_uid,url)
+        super().__init__(news_site_uid, url) 
 
     @property
     def body(self):
@@ -52,3 +59,20 @@ class ArticlePage(NewsPage):
     def title(self):
         result = self._select(self._queries['article_title'])
         return result[0].text if len(result) else ''
+
+    """@property
+    def url(self):
+        link_list = []
+
+        for link in self._select(self._queries['homepage_article_links']):
+            if link and link.has_attr('href'):
+                link_list.append(link)
+
+        a = list(link['href'] for link in
+
+"""
+
+    @property
+    def url(self):
+        return self._url
+
