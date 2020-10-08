@@ -3,6 +3,8 @@ import pandas as pd
 import argparse
 import logging
 import hashlib
+import nltk
+from nltk.corpus import stopwords
 
 from pandas.core.dtypes import missing
 
@@ -20,6 +22,7 @@ def main(filename):
     df = _file_missing_titles(df)
     df = _generate_uids_for_rows(df)
     df = _remove_new_lines_from_body(df)
+    df = _contador_de_palabras_body_tittle(df)
     return df
 
 
@@ -88,6 +91,27 @@ def _remove_new_lines_from_body(df):
     df['body'] = stripped_body
 
     return df
+
+def contador_de_palabras_body_tittle(df, column_name): #Función que corre para realizar conteo
+    logger.info('Contando palabras')
+
+    stop_words = set(stopwords.words('spanish'))
+    return (df
+           .dropna()
+            .apply(lambda row: nltk.word_tokenize(row[column_name]), axis=1)
+            .apply(lambda tokens: list(filter(lambda token: token.isalpha(), tokens)))
+            .apply(lambda tokens: list(map(lambda token: token.lower(), tokens)))
+            .apply(lambda word_list: list(filter(lambda word: word not in stop_words, word_list)))
+            .apply(lambda valid_word_list: len(valid_word_list))
+           )
+
+def _contador_de_palabras_body_tittle(df): # Función que se manda a traer para mostrar
+
+    df['# palabras titulo'] = contador_de_palabras_body_tittle(df, 'title')
+    df['# palabras cuerpo'] = contador_de_palabras_body_tittle(df, 'body')
+    
+    return df
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
