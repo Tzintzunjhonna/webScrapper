@@ -23,6 +23,10 @@ def main(filename):
     df = _generate_uids_for_rows(df)
     df = _remove_new_lines_from_body(df)
     df = _contador_de_palabras_body_tittle(df)
+    df = _remove_duplicate_entries(df, 'title')
+    df = _drop_rows_with_missing_values(df)
+
+    _save_data(df, filename)
     return df
 
 
@@ -111,6 +115,25 @@ def _contador_de_palabras_body_tittle(df): # Función que se manda a traer para 
     df['# palabras cuerpo'] = contador_de_palabras_body_tittle(df, 'body')
     
     return df
+
+def _remove_duplicate_entries(df, column_name):
+    logger.info('Removiendo las entradas duplicadas')
+
+    df.drop_duplicates(subset=[column_name], keep='first', inplace=True)
+
+    return df
+
+def _drop_rows_with_missing_values(df):
+    logger.info('Eliminando rows donde no hay valores')
+
+    a = df.dropna()
+
+    return a
+
+def _save_data(df, filename):
+    clean_filename = 'Clean_{}'.format(filename)
+    logger.info('Guardando archivo en la locación: {}'.format(clean_filename))
+    df.to_csv(clean_filename)
 
 
 if __name__ == '__main__':
