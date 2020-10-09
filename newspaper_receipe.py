@@ -60,12 +60,14 @@ def _extract_host(df):
 
 def _file_missing_titles(df):
     logger.info('Filling missing titles')
+
     missing_titles_mask = df['title'].isna()
+
     missing_titles = (df[missing_titles_mask]['url']
-                      .str.extract(r'(?P<missing_titles>[^/]+)$')
-                      .applymap(lambda title: title.split('_'))
-                      .applymap(lambda tittle_word_list: ' '.join(tittle_word_list))
-                      )
+                     .str.extract(r'(?P<missing_titles>[^/]+)$')
+                     .astype(str).applymap(lambda title: title.replace('-',' '))
+                 )
+
     df.loc[missing_titles_mask, 'title'] = missing_titles.loc[:, 'missing_titles']
 
     return df

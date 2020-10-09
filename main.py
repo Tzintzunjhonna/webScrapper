@@ -5,6 +5,10 @@ from urllib3.exceptions import MaxRetryError
 import re
 import csv
 import datetime
+from urllib3.exceptions import MaxRetryError, DecodeError
+from requests.exceptions import HTTPError, ContentDecodingError
+
+
 
 is_well_formed_link = re.compile(r'^https?://.+/.+$')
 is_root_path = re.compile(r'^/.+$')
@@ -46,11 +50,11 @@ def _fetch_article(news_site_uid, host, link):
 
     try:
         article = news.ArticlePage(news_site_uid, _build_link(host, link))
-    except (HTTPError, MaxRetryError) as e:
+    except (HTTPError, MaxRetryError, DecodeError, ContentDecodingError) as e:
         logger.warning('Error while fetching the article', exc_info=False)
 
     if article and not article.body:
-        logger.warning('Invalid article. there is not body')
+        logger.warning('Invalid article. There is no body')
         return None
 
     return article
